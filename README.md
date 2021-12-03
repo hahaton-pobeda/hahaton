@@ -1,1 +1,1 @@
-# hahaton
+# Проект для хакатона Moscow Secure Traffic
