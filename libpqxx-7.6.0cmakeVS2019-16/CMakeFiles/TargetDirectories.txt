@@ -1,0 +1,12 @@
+C:/Users/admin/Desktop/c/CMakeFiles/PACKAGE.dir
+C:/Users/admin/Desktop/c/CMakeFiles/INSTALL.dir
+C:/Users/admin/Desktop/c/CMakeFiles/ALL_BUILD.dir
+C:/Users/admin/Desktop/c/CMakeFiles/ZERO_CHECK.dir
+C:/Users/admin/Desktop/c/src/CMakeFiles/pqxx.dir
+C:/Users/admin/Desktop/c/src/CMakeFiles/PACKAGE.dir
+C:/Users/admin/Desktop/c/src/CMakeFiles/INSTALL.dir
+C:/Users/admin/Desktop/c/include/CMakeFiles/PACKAGE.dir
+C:/Users/admin/Desktop/c/include/CMakeFiles/INSTALL.dir
+C:/Users/admin/Desktop/c/test/CMakeFiles/PACKAGE.dir
+C:/Users/admin/Desktop/c/test/CMakeFiles/runner.dir
+C:/Users/admin/Desktop/c/test/CMakeFiles/INSTALL.dir
