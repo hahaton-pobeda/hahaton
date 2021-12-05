@@ -93,10 +93,10 @@ void global::take_cars(std::string start_time, std::string end_time, double* beg
 
         pqxx::work Work{ *Connection };
 
-        pqxx::result Result = Work.exec("select grz, lat, lon, address, date from fvf where ((date between '" + start_time + "' and '" + end_time + "')) order by grz asc, date asc"); // ЗДЕСЬ ИЗМЕНИЛИ
+        pqxx::result Result = Work.exec("SELECT grz, lat, lon, date FROM fvf WHERE ((date BETWEEN '" + start_time + "' AND '" + end_time + "') AND (lat BETWEEN " + (std::to_string(begin_pos[1]).replace(2, 1, ".") + " AND " + (std::to_string(end_pos[1])).replace(2, 1, ".") + ") AND (lon BETWEEN " + (std::to_string(begin_pos[0])).replace(2, 1, ".") + " AND " + (std::to_string(end_pos[0])).replace(2, 1, ".") + ")) ORDER BY grz ASC, date ASC")); // ЗДЕСЬ ИЗМЕНИЛИ
                                     //)) and (lat between " + (std::to_string(begin_pos[1])).replace(2,1,".") + " and " + (std::to_string(end_pos[1])).replace(2, 1, ".") + "
                                     //) and (lon between " + (std::to_string(begin_pos[0])).replace(2, 1, ".") + " and " + (std::to_string(end_pos[0])).replace(2, 1, ".") + "
-                                    
+
         std::cout << "Данные получены.\n";
         std::vector <car> cars;
 
@@ -197,57 +197,65 @@ area* global::make_areas() {
     double h_x = (right_up[0] - left_down[0]) / N;
     double h_y = (right_up[1] - left_down[1]) / N;
 
-    areas = new area[N*N];
+    areas = new area[N * N];
 
-    for (int i=0; i < N; i++) {
-        for (int j=0; j < N; j++) {
-            areas[i*N+j].coords[0][0] = left_down[0] + j*h_x;
-            areas[i*N+j].coords[0][1] = right_up[1] - (i+1)*h_y;
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            areas[i * N + j].coords[0][0] = left_down[0] + j * h_x;
+            areas[i * N + j].coords[0][1] = right_up[1] - (i + 1) * h_y;
 
-            areas[i*N+j].coords[1][0] = left_down[0] + (j+1)*h_x;
-            areas[i*N+j].coords[1][1] = right_up[1] - i*h_y;
+            areas[i * N + j].coords[1][0] = left_down[0] + (j + 1) * h_x;
+            areas[i * N + j].coords[1][1] = right_up[1] - i * h_y;
         }
     }
 
-    // cout << areas[0].coords[0][0] << " and " << left_down[0] << endl;
     return areas;
 }
 
-int* global::take_direction(cam cam1, cam cam2) {
-    // Нужно пройтись по массиву машин, внутри которого
-    // camera[нач] , camera[кон]
-    // отсеиваем ненужные результаты: если начальная и конечная координаты находятся в одном секторе, то сразу возвращаем [-1, -1]
-    // иначе вернем два номера районов [нач. район, кон. район]
-    // areas - глобальный
+int* global::take_direction(cam cam1, cam cam2) 
+{
     static int previous[2] = { -1, -1 };
     int answer[2] = { -1, -1 };
 
-    if (fabs(cam1.coords[0] - cam2.coords[0]) < 1e-14 && fabs(cam1.coords[1] - cam2.coords[1]) < 1e-14)
+    if ((fabs(cam1.coords[0] - cam2.coords[0]) < 1e-14) && (fabs(cam1.coords[1] - cam2.coords[1]) < 1e-14))
         return answer;
 
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N; i++) 
+    {
         for (int j = 0; j < N; j++)
-            if (cam1.coords[0] > areas[i * N + j].coords[0][0] && cam1.coords[0] <= areas[i * N + j].coords[1][0])
-                if (cam1.coords[1] > areas[i * N + j].coords[0][1] && cam1.coords[0] <= areas[i * N + j].coords[1][1])
+            if ((cam1.coords[0] > areas[i * N + j].coords[0][0]) && (cam1.coords[0] <= areas[i * N + j].coords[1][0]))
+                if ((cam1.coords[1] > areas[i * N + j].coords[0][1]) && (cam1.coords[1] <= areas[i * N + j].coords[1][1]))
                 {
                     answer[0] = i * N + j;
                     break;
                 }
 
-    for (int i = 0; i < N; i++)
+        if (answer[0] != -1)
+            break;
+    }
+
+    for (int i = 0; i < N; i++) 
+    {
         for (int j = 0; j < N; j++)
             if (cam2.coords[0] > areas[i * N + j].coords[0][0] && cam2.coords[0] <= areas[i * N + j].coords[1][0])
-                if (cam2.coords[1] > areas[i * N + j].coords[0][1] && cam2.coords[0] <= areas[i * N + j].coords[1][1])
+                if (cam2.coords[1] > areas[i * N + j].coords[0][1] && cam2.coords[1] <= areas[i * N + j].coords[1][1])
                 {
                     answer[1] = i * N + j;
                     break;
                 }
 
-    if (answer[0] == previous[0] && answer[1] == previous[1]) {
+        if (answer[1] != -1)
+            break;
+
+    }
+
+    if (answer[0] == previous[0] && answer[1] == previous[1]) 
+    {
         answer[0] = -1;
         answer[1] = -1;
     }
-    else {
+    else 
+    {
         previous[0] = answer[0];
         previous[1] = answer[1];
     }
@@ -255,15 +263,11 @@ int* global::take_direction(cam cam1, cam cam2) {
     return answer;
 }
 
-void global::fill_matrix(int* directions) {
-    // В самом-самом начале матрица должна быть заполнена нулями, по главной диагонали -1
-    // car.directions[0] - откуда
-    // car.directions[1] - куда
-    // Перемещаемся из строки в столбец
-    // если машина не уехала из сектора, то из take_directions вернется direcions[0] == directions[1]
-
-    if (directions[0] == -1 || directions[1] == -1) {
+void global::fill_matrix(int* directions) 
+{
+    if (directions[0] == -1 || directions[1] == -1) 
         return;
-    }
-    matrix_directions[directions[0]][directions[1]] += 1;
+
+    matrix_directions[directions[0]] += 1;
+    matrix_directions[directions[1]] += 1;
 }

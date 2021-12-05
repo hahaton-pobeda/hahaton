@@ -20,19 +20,19 @@ int main()
 	g.calc_corners();
 
 	double* b = new double[2];
-	b[0] = 37.8;
-	b[1] = 56;
+	b[0] = 37.2;
+	b[1] = 55.7;
 
 	double* b1 = new double[2];
 	b1[0] = 37.5;
-	b1[1] = 55.8;
+	b1[1] = 55.9;
 
-	g.take_cars("2021-11-29 17:00:00", "2021-11-29 17:20:00", b, b1);
+	g.take_cars("2021-11-29 17:00:00", "2021-11-29 17:20:00", g.left_down, g.right_up);
 
-	for (size_t i = 0; i < N*N; i++)
+	for (size_t i = 0; i < N; i++)
 	{
-		for (size_t j = 0; j < N*N; j++)
-			cout << g.matrix_directions[i][j] << ' ';
+		for (size_t j = 0; j < N; j++)
+			cout << g.matrix_directions[i*N + j] << ' ';
 		cout << '\n';
 	}
 

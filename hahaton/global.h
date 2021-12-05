@@ -5,7 +5,7 @@
 #include <windows.system.h>
 #include <ctime>
 #include <cmath>
-#define N 4
+#define N 9
 
 struct cam
 {
@@ -35,7 +35,7 @@ public:
 
     double left_down[2], right_up[2];
 
-    int matrix_directions[N * N][N * N] = { {0} };
+    int matrix_directions[N*N] = { {0} };
 
     car* cars = nullptr;
 
