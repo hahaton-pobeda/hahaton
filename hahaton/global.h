@@ -35,7 +35,7 @@ public:
 
     double left_down[2], right_up[2];
 
-    int matrix_directions[N][N] = { {0} };
+    int matrix_directions[N * N][N * N] = { {0} };
 
     car* cars = nullptr;
 
@@ -53,10 +53,9 @@ public:
 
     void take_cars(std::string start_time, std::string end_time, double* begin_pos, double* end_pos);
 
-
     area* make_areas();
 
     int* take_direction(cam, cam);
 
-    void fill_matrix(int*, int[][N]);
+    void fill_matrix(int*);
 };

@@ -54,7 +54,7 @@ void global::calc_corners()
 
     pqxx::work Work{ *Connection };
 
-    pqxx::result Result = Work.exec("select max(lon), max(lat) from fvf");
+    pqxx::result Result = Work.exec("select max(lon), max(lat) from det_coords");
 
     pqxx::field field = Result[0][0];
     right_up[0] = field.as<double>();
@@ -64,7 +64,7 @@ void global::calc_corners()
 
     std::cout << "Верхний правый: [" << right_up[0] << " : " << right_up[1] << "]" << std::endl;
 
-    Result = Work.exec("select min(lon), min(lat) from fvf");
+    Result = Work.exec("select min(lon), min(lat) from det_coords");
 
     field = Result[0][0];
     left_down[0] = field.as<double>();
@@ -77,82 +77,42 @@ void global::calc_corners()
     std::cout << "Расчет угловых координат завершен!\n";
 }
 
-void global::take_cars(std::string start_time, std::string end_time, double *begin_pos, double *end_pos)
+void global::take_cars(std::string start_time, std::string end_time, double* begin_pos, double* end_pos)
 {
-    if (!check(begin_pos, end_pos))
+    try
     {
-        std::cout << "Ошибка координат!\n";
-        return;
-    }
-
-    std::cout << "Расчет трафика...\n";
-
-    pqxx::work Work{ *Connection };
-
-    pqxx::result Result = Work.exec("select grz, lat, lon, address, date from fvf where (date between " + start_time + " and " + end_time + "\
-                                    and (lat between " + std::to_string(begin_pos[1]) + " and " + std::to_string(end_pos[1]) + "\
-                                    ) and (lon between " + std::to_string(begin_pos[0]) + " and " + std::to_string(end_pos[0]) + ")" + "\
-                                    ) ORDER BY grz, date"); // ЗДЕСЬ ИЗМЕНИЛИ
-
-    std::vector <car> cars;
-
-    car car_temp;
-    cam cam_temp;
-
-    for (int rownum = 0; rownum < Result.size(); ++rownum)
-    {
-        // Нужно пройтись по строчкам:
-        // если rownum == 0 , то просто cars[0].grz = Result[0][0]
-        // иначе (если rownum > 0) если Result[rownum][0] отличается от grz текущего автомобиля, то создаем новый автомобиль и присваиваем ему этот grz
-        // пока grz одинаковый и дата текущей и предыдущей строчек различная, создаем новую камеру в машине
-
-        pqxx::field field = Result[rownum][0];
-
-        if (rownum == 0) 
+        if (!check(begin_pos, end_pos))
         {
-            car_temp.grz = field.as<std::string>();
-            cars.push_back(car_temp);
-
-            field = Result[rownum][3];
-            cam_temp.address = field.as<std::string>();
-
-            //field = Result[rownum][4];
-            //cam_temp.date = field.as<tm>();
-
-            field = Result[rownum][2];
-            cam_temp.coords[0] = field.as<double>();
-
-            field = Result[rownum][1];
-            cam_temp.coords[1] = field.as<double>();
-
-            cars[0].camera.push_back(cam_temp);
+            std::cout << "Ошибка координат!\n";
+            return;
         }
-        else 
+
+        make_areas();
+
+        std::cout << "Расчет трафика...\n";
+
+        pqxx::work Work{ *Connection };
+
+        pqxx::result Result = Work.exec("select grz, lat, lon, address, date from fvf where ((date between '" + start_time + "' and '" + end_time + "')) order by grz asc, date asc"); // ЗДЕСЬ ИЗМЕНИЛИ
+                                    //)) and (lat between " + (std::to_string(begin_pos[1])).replace(2,1,".") + " and " + (std::to_string(end_pos[1])).replace(2, 1, ".") + "
+                                    //) and (lon between " + (std::to_string(begin_pos[0])).replace(2, 1, ".") + " and " + (std::to_string(end_pos[0])).replace(2, 1, ".") + "
+                                    
+        std::cout << "Данные получены.\n";
+        std::vector <car> cars;
+
+        car car_temp;
+        cam cam_temp;
+
+        for (int rownum = 0; rownum < Result.size(); ++rownum)
         {
-            if (field.as<std::string>() == cars[cars.size()-1].grz) 
-            {
-                field = Result[rownum][3];
-                cam_temp.address = field.as<std::string>();
+            // Нужно пройтись по строчкам:
+            // если rownum == 0 , то просто cars[0].grz = Result[0][0]
+            // иначе (если rownum > 0) если Result[rownum][0] отличается от grz текущего автомобиля, то создаем новый автомобиль и присваиваем ему этот grz
+            // пока grz одинаковый и дата текущей и предыдущей строчек различная, создаем новую камеру в машине
 
-                //field = Result[rownum][4];
-                //cam_temp.date = field.as<tm>();
+            pqxx::field field = Result[rownum][0];
 
-                field = Result[rownum][2];
-                cam_temp.coords[0] = field.as<double>();
-
-                field = Result[rownum][1];
-                cam_temp.coords[1] = field.as<double>();
-
-                cars[cars.size()-1].camera.push_back(cam_temp);
-
-                if (cars[cars.size()-1].camera.size() >= 2) 
-                {
-                    fill_matrix(take_direction(cars[cars.size() - 1].camera[cars[cars.size() - 1].camera.size() - 2],
-                        cars[cars.size() - 1].camera[cars[cars.size() - 1].camera.size() - 1]),
-                        matrix_directions);
-                }
-            }
-            else 
+            if (rownum == 0)
             {
                 car_temp.grz = field.as<std::string>();
                 cars.push_back(car_temp);
@@ -169,12 +129,61 @@ void global::take_cars(std::string start_time, std::string end_time, double *beg
                 field = Result[rownum][1];
                 cam_temp.coords[1] = field.as<double>();
 
-                cars[cars.size()-1].camera.push_back(cam_temp);
+                cars[0].camera.push_back(cam_temp);
+            }
+            else
+            {
+                if (field.as<std::string>() == cars[cars.size() - 1].grz)
+                {
+                    field = Result[rownum][3];
+                    cam_temp.address = field.as<std::string>();
+
+                    //field = Result[rownum][4];
+                    //cam_temp.date = field.as<tm>();
+
+                    field = Result[rownum][2];
+                    cam_temp.coords[0] = field.as<double>();
+
+                    field = Result[rownum][1];
+                    cam_temp.coords[1] = field.as<double>();
+
+                    cars[cars.size() - 1].camera.push_back(cam_temp);
+
+                    if (cars[cars.size() - 1].camera.size() >= 2)
+                    {
+                        fill_matrix(take_direction(cars[cars.size() - 1].camera[cars[cars.size() - 1].camera.size() - 2],
+                            cars[cars.size() - 1].camera[cars[cars.size() - 1].camera.size() - 1]));
+                    }
+                }
+                else
+                {
+                    car_temp.grz = field.as<std::string>();
+                    cars.push_back(car_temp);
+
+                    field = Result[rownum][3];
+                    cam_temp.address = field.as<std::string>();
+
+                    //field = Result[rownum][4];
+                    //cam_temp.date = field.as<tm>();
+
+                    field = Result[rownum][2];
+                    cam_temp.coords[0] = field.as<double>();
+
+                    field = Result[rownum][1];
+                    cam_temp.coords[1] = field.as<double>();
+
+                    cars[cars.size() - 1].camera.push_back(cam_temp);
+                }
             }
         }
-    }
 
-    std::cout << "Расчет трафика завершен!\n";
+        std::cout << "Расчет трафика завершен!\n";
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+        return;
+    }
 }
 
 area* global::make_areas() {
@@ -246,7 +255,7 @@ int* global::take_direction(cam cam1, cam cam2) {
     return answer;
 }
 
-void global::fill_matrix(int* directions, int matrix[][N]) {
+void global::fill_matrix(int* directions) {
     // В самом-самом начале матрица должна быть заполнена нулями, по главной диагонали -1
     // car.directions[0] - откуда
     // car.directions[1] - куда
@@ -256,5 +265,5 @@ void global::fill_matrix(int* directions, int matrix[][N]) {
     if (directions[0] == -1 || directions[1] == -1) {
         return;
     }
-    matrix[directions[0]][directions[1]] += 1;
+    matrix_directions[directions[0]][directions[1]] += 1;
 }
