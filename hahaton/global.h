@@ -4,6 +4,7 @@
 #include <vector>
 #include <windows.system.h>
 #include <ctime>
+#include <cmath>
 #define N 4
 
 struct cam

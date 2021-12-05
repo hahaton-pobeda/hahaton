@@ -210,29 +210,38 @@ int* global::take_direction(cam cam1, cam cam2) {
     // отсеиваем ненужные результаты: если начальная и конечная координаты находятся в одном секторе, то сразу возвращаем [-1, -1]
     // иначе вернем два номера районов [нач. район, кон. район]
     // areas - глобальный
+    static int previous[2] = { -1, -1 };
+    int answer[2] = { -1, -1 };
 
-    int answer[2] = {-1, -1};
-
-    if (cam1.coords[0] == cam2.coords[0] && cam1.coords[1] == cam2.coords[1])
+    if (fabs(cam1.coords[0] - cam2.coords[0]) < 1e-14 && fabs(cam1.coords[1] - cam2.coords[1]) < 1e-14)
         return answer;
 
-    for (int i=0; i < N; i++) 
-        for (int j=0; j < N; j++) 
-            if (cam1.coords[0]  > areas[i*N+j].coords[0][0] && cam1.coords[0] <= areas[i*N+j].coords[1][0] ) 
-                if ( cam1.coords[1] > areas[i*N+j].coords[0][1] && cam1.coords[0] <= areas[i*N+j].coords[1][1] ) 
+    for (int i = 0; i < N; i++)
+        for (int j = 0; j < N; j++)
+            if (cam1.coords[0] > areas[i * N + j].coords[0][0] && cam1.coords[0] <= areas[i * N + j].coords[1][0])
+                if (cam1.coords[1] > areas[i * N + j].coords[0][1] && cam1.coords[0] <= areas[i * N + j].coords[1][1])
                 {
-                    answer[0] = i*N+j;
+                    answer[0] = i * N + j;
                     break;
                 }
 
-    for (int i=0; i < N; i++) 
-        for (int j=0; j < N; j++) 
-            if (cam2.coords[0] > areas[i*N+j].coords[0][0] && cam2.coords[0] <= areas[i*N+j].coords[1][0] ) 
-                if ( cam2.coords[1] > areas[i*N+j].coords[0][1] && cam2.coords[0] <= areas[i*N+j].coords[1][1] ) 
+    for (int i = 0; i < N; i++)
+        for (int j = 0; j < N; j++)
+            if (cam2.coords[0] > areas[i * N + j].coords[0][0] && cam2.coords[0] <= areas[i * N + j].coords[1][0])
+                if (cam2.coords[1] > areas[i * N + j].coords[0][1] && cam2.coords[0] <= areas[i * N + j].coords[1][1])
                 {
-                    answer[1] = i*N+j;
+                    answer[1] = i * N + j;
                     break;
                 }
+
+    if (answer[0] == previous[0] && answer[1] == previous[1]) {
+        answer[0] = -1;
+        answer[1] = -1;
+    }
+    else {
+        previous[0] = answer[0];
+        previous[1] = answer[1];
+    }
 
     return answer;
 }

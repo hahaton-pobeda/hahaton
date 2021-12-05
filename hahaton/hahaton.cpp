@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void menu();
+void menu(global g);
 
 int main()
 {
@@ -19,7 +19,22 @@ int main()
 
 	g.calc_corners();
 
+	double* b = new double[2];
+	b[0] = 37.9;
+	b[1] = 56;
 
+	double* b1 = new double[2];
+	b1[0] = 37.7;
+	b1[1] = 55.8;
+
+	g.take_cars("2021-11-29 16:00:00", "2021-11-29 18:00:00", b, b1);
+
+	for (size_t i = 0; i < N; i++)
+	{
+		for (size_t j = 0; j < N; j++)
+			cout << g.matrix_directions[i][j] << '\t';
+		cout << '\n';
+	}
 
 	//Sleep(1000);
 
