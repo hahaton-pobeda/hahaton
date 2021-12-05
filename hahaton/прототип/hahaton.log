@@ -1,0 +1,4 @@
+﻿  global.cpp
+C:\Users\alexa\Desktop\hahaton\hahaton\global.cpp(226): warning C4172: returning address of local variable or temporary: answer
+C:\Users\alexa\Desktop\hahaton\hahaton\global.cpp(255): warning C4172: returning address of local variable or temporary: answer
+  hahaton.vcxproj -> C:\Users\alexa\Desktop\hahaton\hahaton\x64\Debug\hahaton.exe

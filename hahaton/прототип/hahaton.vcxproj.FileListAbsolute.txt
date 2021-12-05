@@ -1,0 +1,6 @@
+C:\Users\alexa\Desktop\hahaton\hahaton\x64\Debug\hahaton.vcxproj.CopyComplete
+C:\Users\alexa\Desktop\hahaton\hahaton\x64\Debug\hahaton.exe
+C:\Users\alexa\Desktop\hahaton\hahaton\x64\Debug\pqxx.dll
+C:\Users\alexa\Desktop\hahaton\hahaton\x64\Debug\LIBPQ.dll
+C:\Users\alexa\Desktop\hahaton\hahaton\x64\Debug\libssl-1_1-x64.dll
+C:\Users\alexa\Desktop\hahaton\hahaton\x64\Debug\libcrypto-1_1-x64.dll
